@@ -48,6 +48,12 @@ exports.signup = asyncHandler(async (req, res, next) => {
     },
   } = req;
 
+  const isUsernameExist = await User.findOne({ username });
+  if (isUsernameExist)
+    return next(
+      new AppError(`${username} already is taken, please select another!`, 400)
+    );
+
   const newUser = await User.create({
     firstName,
     lastName,
