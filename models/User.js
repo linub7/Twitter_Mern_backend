@@ -63,30 +63,30 @@ const UserSchema = new Schema(
       url: String,
       public_id: String,
     },
-    likes: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Post',
-      },
-    ],
-    retweets: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'Post',
-      },
-    ],
-    following: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    followers: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
+    // likes: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'Post',
+    //   },
+    // ],
+    // retweets: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'Post',
+    //   },
+    // ],
+    // following: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //   },
+    // ],
+    // followers: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: 'User',
+    //   },
+    // ],
     passwordChangedAt: Date,
     passwordResetToken: String,
     passwordResetExpires: Date,
@@ -94,6 +94,30 @@ const UserSchema = new Schema(
 
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
+
+UserSchema.virtual('likes', {
+  ref: 'Post',
+  foreignField: 'likes',
+  localField: '_id',
+});
+
+UserSchema.virtual('retweets', {
+  ref: 'Post',
+  foreignField: 'retweetUsers',
+  localField: '_id',
+});
+
+UserSchema.virtual('following', {
+  ref: 'User',
+  foreignField: 'following',
+  localField: '_id',
+});
+
+UserSchema.virtual('followers', {
+  ref: 'User',
+  foreignField: 'following',
+  localField: '_id',
+});
 
 UserSchema.pre('save', async function (next) {
   // only run this function if password was actually modified
