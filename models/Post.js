@@ -15,18 +15,18 @@ const PostSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    // likes: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //   },
-    // ],
-    // retweetUsers: [
-    //   {
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'User',
-    //   },
-    // ],
+    likes: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    retweetUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     retweetData: {
       type: Schema.Types.ObjectId,
       ref: 'Post',
@@ -38,18 +38,6 @@ const PostSchema = new Schema(
   },
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-
-PostSchema.virtual('likes', {
-  ref: 'User',
-  foreignField: 'likes',
-  localField: '_id',
-});
-
-PostSchema.virtual('retweetUsers', {
-  ref: 'User',
-  foreignField: 'retweets',
-  localField: '_id',
-});
 
 PostSchema.pre('save', function (next) {
   this.populate({

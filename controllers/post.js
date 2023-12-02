@@ -95,6 +95,111 @@ exports.getPosts = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.togglePostLike = asyncHandler(async (req, res, next) => {
+  const {
+    user,
+    params: { id },
+  } = req;
+
+  const existedPost = await Post.findById(id);
+  if (!existedPost) return next(new AppError('Post not found', 404));
+
+  const isLiked = user?.likes?.includes(existedPost?._id);
+
+  const option = isLiked ? '$pull' : '$addToSet';
+
+  await User.findByIdAndUpdate(
+    user?._id,
+    {
+      [option]: {
+        // [] allows to insert variables
+        likes: existedPost?._id,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  const updatedPost = await Post.findByIdAndUpdate(
+    existedPost?._id,
+    {
+      [option]: {
+        likes: user?.id,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  return res.json({ status: 'success', data: { data: updatedPost } });
+});
+
+exports.postRetweet = asyncHandler(async (req, res, next) => {
+  const {
+    user,
+    params: { id },
+  } = req;
+
+  const existedPost = await Post.findById(id);
+  if (!existedPost) return next(new AppError('Post not found', 404));
+
+  // if already exists -> try un-retweet
+  const deletedPost = await Post.findOneAndDelete({
+    postedBy: user?._id,
+    retweetData: existedPost?._id,
+  });
+
+  // determine that is already exists or not
+  const option = deletedPost !== null ? '$pull' : '$addToSet';
+
+  let rePost = deletedPost;
+
+  // if rePost doesn't exist -> create a rePost
+  if (rePost === null) {
+    rePost = await Post.create({
+      postedBy: user?._id,
+      retweetData: existedPost?._id,
+    });
+  }
+
+  // update retweets of current user
+  await User.findByIdAndUpdate(
+    user?._id,
+    {
+      [option]: {
+        retweets: rePost?._id,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  // update retweetUsers of current post
+  const post = await Post.findByIdAndUpdate(
+    existedPost?._id,
+    {
+      [option]: {
+        retweetUsers: user?._id,
+      },
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).populate('retweetUsers', 'firstName lastName username');
+
+  return res.json({
+    status: 'success',
+    data: { data: { post, rePost, option } },
+  });
+});
+
 const getPostsFn = async (filter) => {
   try {
     const results = await Post.find(filter)

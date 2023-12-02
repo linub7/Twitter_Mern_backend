@@ -61,7 +61,7 @@ exports.getSingleOne = (Model, populateOptions) =>
     });
   });
 
-exports.getAll = (Model) =>
+exports.getAll = (Model, populateOptions) =>
   asyncHandler(async (req, res, next) => {
     const {
       params: { id },
@@ -72,7 +72,10 @@ exports.getAll = (Model) =>
     if (id) filter = { tour: id };
 
     // Execute Query
-    const features = new ApiFeature(Model.find(filter), query)
+    const features = new ApiFeature(
+      Model.find(filter).populate(populateOptions),
+      query
+    )
       .filter()
       .sort()
       .limitFields()
