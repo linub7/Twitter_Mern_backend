@@ -32,7 +32,6 @@ exports.createPost = asyncHandler(async (req, res, next) => {
   if (replyTo) {
     populatedPost = await Post.findById(newPost?._id).populate({
       path: 'replyTo',
-      select: 'content',
     });
   }
 
