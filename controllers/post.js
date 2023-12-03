@@ -94,6 +94,32 @@ exports.getPosts = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.getSinglePostAndReplies = asyncHandler(async (req, res, next) => {
+  const {
+    params: { id },
+  } = req;
+
+  const existedPost = await Post.findById(id);
+
+  const relatedPosts = await Post.find({
+    $or: [
+      {
+        replyTo: existedPost?._id,
+      },
+      {
+        retweetData: existedPost?._id,
+      },
+    ],
+  }).populate('retweetData');
+
+  const posts = [existedPost, ...relatedPosts];
+
+  res.json({
+    status: 'success',
+    data: { data: posts },
+  });
+});
+
 exports.togglePostLike = asyncHandler(async (req, res, next) => {
   const {
     user,

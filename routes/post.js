@@ -7,6 +7,7 @@ const {
   getPosts,
   togglePostLike,
   postRetweet,
+  getSinglePostAndReplies,
 } = require('../controllers/post');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
@@ -24,7 +25,7 @@ router.param('id', (req, res, next, val) => {
 
 router
   .route('/posts/:id')
-  .get(trimRequest.all, protect, getSingleOne(Post, { path: 'likes' }));
+  .get(trimRequest.all, protect, getSinglePostAndReplies);
 
 router.route('/posts/:id/like').put(trimRequest.all, protect, togglePostLike);
 router.route('/posts/:id/retweet').put(trimRequest.all, protect, postRetweet);
