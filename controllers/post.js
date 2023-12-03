@@ -225,6 +225,24 @@ exports.postRetweet = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.deletePost = asyncHandler(async (req, res, next) => {
+  const {
+    params: { id },
+    user,
+  } = req;
+
+  const deletedPost = await Post.findOneAndDelete({
+    _id: id,
+    postedBy: user._id,
+  });
+  if (!deletedPost) return next(new AppError('Post not found', 404));
+
+  return res.json({
+    status: 'success',
+    data: { data: deletedPost },
+  });
+});
+
 const getPostsFn = async (filter) => {
   try {
     const results = await Post.find(filter)
