@@ -39,6 +39,6 @@ router.route('/posts/:id/retweet').put(trimRequest.all, protect, postRetweet);
 router
   .route('/posts')
   .post(trimRequest.all, protect, createPost)
-  .get(trimRequest.all, protect, getAll(Post, { path: 'retweetData' }));
+  .get(trimRequest.all, protect, getPosts);
 
 module.exports = router;

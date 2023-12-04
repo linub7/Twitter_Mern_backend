@@ -42,55 +42,13 @@ exports.createPost = asyncHandler(async (req, res, next) => {
 });
 
 exports.getPosts = asyncHandler(async (req, res, next) => {
-  const {
-    user,
-    query: { searchObj },
-  } = req;
+  const { user } = req;
 
-  const existedUser = await User.findById(user._id);
-  console.log({ existedUser });
+  const posts = await Post.find({});
 
-  if (searchObj?.isReply !== undefined) {
-    const isReply = searchObj?.isReply === 'true';
-    searchObj.replyTo = {
-      $exists: isReply,
-    };
-    delete searchObj.isReply;
-  }
-
-  if (searchObj?.search !== undefined) {
-    searchObj.content = { $regex: searchObj?.search, $options: 'i' };
-    delete searchObj?.search;
-  }
-
-  if (searchObj?.followingOnly !== undefined) {
-    const followingOnly = searchObj?.followingOnly === 'true';
-
-    if (followingOnly) {
-      const objectIds = [];
-
-      if (!user?.following) {
-        user.following = [];
-      }
-
-      user?.following?.forEach((user) => {
-        objectIds.push(user);
-      });
-
-      objectIds?.push(user._id);
-
-      searchObj.postedBy = {
-        $in: objectIds,
-      };
-    }
-
-    delete searchObj.followingOnly;
-  }
-
-  const results = await getPostsFn(searchObj);
   return res.json({
     status: 'success',
-    data: { data: results },
+    data: { data: posts },
   });
 });
 
@@ -236,6 +194,29 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
     postedBy: user._id,
   });
   if (!deletedPost) return next(new AppError('Post not found', 404));
+
+  const retweets = await Post.find({ retweetData: deletedPost?._id });
+
+  for (const retweet of retweets) {
+    await retweet.deleteOne();
+  }
+
+  // await Post.findOneAndUpdate(
+  //   { retweetData: deletedPost?._id },
+  //   { retweetData: undefined },
+  //   { new: true }
+  // );
+
+  // // for (const item of retweets) {
+  // //   item.retweetData = null;
+  // //   await item.save({ validateBeforeSave: false });
+  // // }
+
+  // await Post.findOneAndUpdate(
+  //   { replyTo: deletedPost?._id },
+  //   { replyTo: undefined },
+  //   { new: true }
+  // );
 
   return res.json({
     status: 'success',

@@ -8,6 +8,7 @@ const {
   resetPassword,
   updatePassword,
   signoutUser,
+  getMe,
 } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
 
@@ -25,5 +26,6 @@ router.patch(
 router.post('/auth/signup', trimRequest.all, signup);
 router.post('/auth/signin', trimRequest.all, signin);
 router.get('/auth/signout', trimRequest.all, signoutUser);
+router.get('/auth/me', trimRequest.all, protect, getMe);
 
 module.exports = router;
