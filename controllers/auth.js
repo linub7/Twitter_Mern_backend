@@ -230,11 +230,9 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     query: { replyToMode },
   } = req;
 
-  const me = await User.findById(user?.id)
-    .populate('likes', 'content postedBy')
-    .populate('retweets', 'content postedBy')
-    .populate('following', 'firstName lastName email username profilePic')
-    .populate('followers', 'firstName lastName email username profilePic');
+  const me = await User.findById(user?.id).select(
+    '-likes -retweets -email -createdAt -updatedAt'
+  );
 
   const allPosts = await Post.find({ postedBy: me?._id }).sort('-updatedAt');
 
@@ -242,8 +240,6 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   let replyPosts = [];
 
   for (const item of allPosts) {
-    const isExistedRetweet = await Post.findById(item?.retweetData);
-
     if (item?.replyTo) {
       replyPosts.push(item);
     } else {

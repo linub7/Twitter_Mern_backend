@@ -44,7 +44,9 @@ exports.createPost = asyncHandler(async (req, res, next) => {
 exports.getPosts = asyncHandler(async (req, res, next) => {
   const { user } = req;
 
-  const posts = await Post.find({});
+  const posts = await Post.find({
+    $or: [{ postedBy: { $in: user.following } }, { postedBy: user?._id }],
+  });
 
   return res.json({
     status: 'success',
@@ -201,22 +203,25 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
     await retweet.deleteOne();
   }
 
-  // await Post.findOneAndUpdate(
-  //   { retweetData: deletedPost?._id },
-  //   { retweetData: undefined },
-  //   { new: true }
-  // );
+  const usersLikedPosts = await User.find({ likes: deletedPost?._id });
+  for (const element of usersLikedPosts) {
+    let tmpLikedArray = [...element?.likes];
+    tmpLikedArray = tmpLikedArray.filter(
+      (item) => item?.toString() !== deletedPost?._id?.toString()
+    );
+    element.likes = tmpLikedArray;
+    await element.save({ validateBeforeSave: false });
+  }
 
-  // // for (const item of retweets) {
-  // //   item.retweetData = null;
-  // //   await item.save({ validateBeforeSave: false });
-  // // }
-
-  // await Post.findOneAndUpdate(
-  //   { replyTo: deletedPost?._id },
-  //   { replyTo: undefined },
-  //   { new: true }
-  // );
+  const userRetweetPosts = await User.find({ retweets: deletedPost?._id });
+  for (const usr of userRetweetPosts) {
+    let tmpRetweetsArray = [...usr.retweets];
+    tmpRetweetsArray = tmpRetweetsArray.filter(
+      (item) => item?.toString() !== deletedPost?._id?.toString()
+    );
+    usr.retweets = tmpRetweetsArray;
+    await usr.save({ validateBeforeSave: false });
+  }
 
   return res.json({
     status: 'success',
