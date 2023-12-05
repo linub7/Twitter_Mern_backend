@@ -9,8 +9,11 @@ const {
   updatePassword,
   signoutUser,
   getMe,
+  updateProfilePhoto,
+  updateCoverPhoto,
 } = require('../controllers/auth');
 const { protect } = require('../middleware/auth');
+const { uploadImage } = require('../middleware/multer');
 
 const router = express.Router();
 
@@ -27,5 +30,23 @@ router.post('/auth/signup', trimRequest.all, signup);
 router.post('/auth/signin', trimRequest.all, signin);
 router.get('/auth/signout', trimRequest.all, signoutUser);
 router.get('/auth/me', trimRequest.all, protect, getMe);
+router
+  .route('/auth/me')
+  .get(trimRequest.all, protect, getMe)
+  .put(
+    trimRequest.all,
+    protect,
+    uploadImage.single('profilePic'),
+    updateProfilePhoto
+  );
+
+router
+  .route('/auth/me/update-cover')
+  .put(
+    trimRequest.all,
+    protect,
+    uploadImage.single('coverPhoto'),
+    updateCoverPhoto
+  );
 
 module.exports = router;

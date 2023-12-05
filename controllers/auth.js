@@ -7,6 +7,10 @@ const User = require('../models/User');
 const AppError = require('../utils/AppError');
 const sendEmail = require('../utils/email');
 const Post = require('../models/Post');
+const {
+  destroyImageFromCloudinary,
+  uploadImageToCloudinary,
+} = require('../utils/imageUpload');
 
 const signToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -255,3 +259,62 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     data: { data: result },
   });
 });
+
+exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
+  const { user } = req;
+
+  if (!req.file) return next(new AppError('Please enter a photo', 400));
+
+  const me = await User.findById(user?._id);
+
+  if (me?.profilePic?.public_id) {
+    await destroyImageFromCloudinary(me?.profilePic?.public_id);
+    const payload = await uploadImageToCloudinary(req.file?.path);
+    const { url, public_id } = payload;
+    me.profilePic = { url, public_id };
+
+    const updatedMe = await me.save({ validateBeforeSave: false });
+
+    const result = {
+      _id: updatedMe?._id,
+      id: updatedMe?.id,
+      firstName: updatedMe?.firstName,
+      lastName: updatedMe?.lastName,
+      username: updatedMe?.username,
+      email: updatedMe?.email,
+      following: updatedMe?.following,
+      followers: updatedMe?.followers,
+      profilePic: updatedMe?.profilePic?.url,
+    };
+
+    return res.json({
+      status: 'success',
+      data: { data: result },
+    });
+  } else {
+    const payload = await uploadImageToCloudinary(req.file?.path);
+    const { url, public_id } = payload;
+    me.profilePic = { url, public_id };
+
+    const updatedMe = await me.save({ validateBeforeSave: false });
+
+    const result = {
+      _id: updatedMe?._id,
+      id: updatedMe?.id,
+      firstName: updatedMe?.firstName,
+      lastName: updatedMe?.lastName,
+      username: updatedMe?.username,
+      email: updatedMe?.email,
+      following: updatedMe?.following,
+      followers: updatedMe?.followers,
+      profilePic: updatedMe?.profilePic?.url,
+    };
+
+    return res.json({
+      status: 'success',
+      data: { data: result },
+    });
+  }
+});
+
+exports.updateCoverPhoto = asyncHandler(async (req, res, next) => {});
