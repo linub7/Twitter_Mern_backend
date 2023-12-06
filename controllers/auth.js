@@ -238,7 +238,9 @@ exports.getMe = asyncHandler(async (req, res, next) => {
     '-likes -retweets -email -createdAt -updatedAt'
   );
 
-  const allPosts = await Post.find({ postedBy: me?._id }).sort('-updatedAt');
+  const allPosts = await Post.find({ postedBy: me?._id })
+    .populate('retweetData')
+    .sort('-updatedAt');
 
   let posts = [];
   let replyPosts = [];

@@ -46,7 +46,9 @@ exports.getPosts = asyncHandler(async (req, res, next) => {
 
   const posts = await Post.find({
     $or: [{ postedBy: { $in: user.following } }, { postedBy: user?._id }],
-  });
+  })
+    .populate('retweetData')
+    .sort('-createdAt');
 
   return res.json({
     status: 'success',
@@ -182,6 +184,35 @@ exports.postRetweet = asyncHandler(async (req, res, next) => {
   return res.json({
     status: 'success',
     data: { data: { post, rePost, option } },
+  });
+});
+
+exports.updatePost = asyncHandler(async (req, res, next) => {
+  const {
+    user,
+    body,
+    params: { id },
+  } = req;
+
+  if (body?.pinned !== undefined) {
+    await Post.updateMany(
+      { postedBy: user?._id },
+      { pinned: false },
+      { new: true, runValidators: true }
+    );
+  }
+
+  const updatedPost = await Post.findOneAndUpdate(
+    { _id: id, postedBy: user?._id },
+    body,
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedPost) return next(new AppError('Post not found', 404));
+
+  return res.json({
+    status: 'success',
+    data: { data: updatedPost },
   });
 });
 

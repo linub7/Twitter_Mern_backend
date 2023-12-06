@@ -9,6 +9,7 @@ const {
   togglePostLike,
   postRetweet,
   getSinglePostAndReplies,
+  updatePost,
 } = require('../controllers/post');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
@@ -31,6 +32,7 @@ router.param('id', (req, res, next, val) => {
 router
   .route('/posts/:id')
   .get(trimRequest.all, protect, getSinglePostAndReplies)
+  .put(trimRequest.all, protect, updatePost)
   .delete(trimRequest.all, protect, deletePost);
 
 router.route('/posts/:id/like').put(trimRequest.all, protect, togglePostLike);
