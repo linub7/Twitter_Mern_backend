@@ -30,8 +30,9 @@ router.post('/auth/signup', trimRequest.all, signup);
 router.post('/auth/signin', trimRequest.all, signin);
 router.get('/auth/signout', trimRequest.all, signoutUser);
 router.get('/auth/me', trimRequest.all, protect, getMe);
+
 router
-  .route('/auth/me')
+  .route('/auth/me/update-profile')
   .get(trimRequest.all, protect, getMe)
   .put(
     trimRequest.all,
@@ -42,7 +43,7 @@ router
 
 router
   .route('/auth/me/update-cover')
-  .put(
+  .patch(
     trimRequest.all,
     protect,
     uploadImage.single('coverPhoto'),

@@ -285,6 +285,7 @@ exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
       following: updatedMe?.following,
       followers: updatedMe?.followers,
       profilePic: updatedMe?.profilePic?.url,
+      coverPhoto: updatedMe?.coverPhoto?.url,
     };
 
     return res.json({
@@ -308,6 +309,7 @@ exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
       following: updatedMe?.following,
       followers: updatedMe?.followers,
       profilePic: updatedMe?.profilePic?.url,
+      coverPhoto: updatedMe?.coverPhoto?.url,
     };
 
     return res.json({
@@ -317,4 +319,61 @@ exports.updateProfilePhoto = asyncHandler(async (req, res, next) => {
   }
 });
 
-exports.updateCoverPhoto = asyncHandler(async (req, res, next) => {});
+exports.updateCoverPhoto = asyncHandler(async (req, res, next) => {
+  const { user } = req;
+
+  if (!req.file) return next(new AppError('Please enter a photo', 400));
+
+  const me = await User.findById(user?._id);
+
+  if (me?.coverPhoto?.public_id) {
+    await destroyImageFromCloudinary(me?.coverPhoto?.public_id);
+    const payload = await uploadImageToCloudinary(req.file?.path);
+    const { url, public_id } = payload;
+    me.coverPhoto = { url, public_id };
+
+    const updatedMe = await me.save({ validateBeforeSave: false });
+
+    const result = {
+      _id: updatedMe?._id,
+      id: updatedMe?.id,
+      firstName: updatedMe?.firstName,
+      lastName: updatedMe?.lastName,
+      username: updatedMe?.username,
+      email: updatedMe?.email,
+      following: updatedMe?.following,
+      followers: updatedMe?.followers,
+      profilePic: updatedMe?.profilePic?.url,
+      coverPhoto: updatedMe?.coverPhoto?.url,
+    };
+
+    return res.json({
+      status: 'success',
+      data: { data: result },
+    });
+  } else {
+    const payload = await uploadImageToCloudinary(req.file?.path);
+    const { url, public_id } = payload;
+    me.coverPhoto = { url, public_id };
+
+    const updatedMe = await me.save({ validateBeforeSave: false });
+
+    const result = {
+      _id: updatedMe?._id,
+      id: updatedMe?.id,
+      firstName: updatedMe?.firstName,
+      lastName: updatedMe?.lastName,
+      username: updatedMe?.username,
+      email: updatedMe?.email,
+      following: updatedMe?.following,
+      followers: updatedMe?.followers,
+      profilePic: updatedMe?.profilePic?.url,
+      coverPhoto: updatedMe?.coverPhoto?.url,
+    };
+
+    return res.json({
+      status: 'success',
+      data: { data: result },
+    });
+  }
+});
