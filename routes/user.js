@@ -7,6 +7,7 @@ const {
   toggleUserFollow,
   getUserFollowing,
   getUserFollowers,
+  searchUsers,
 } = require('../controllers/user');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
@@ -19,6 +20,8 @@ router.param('id', (req, res, next, val) => {
   }
   next();
 });
+
+router.route('/users/search').get(trimRequest.all, protect, searchUsers);
 
 router.route('/users/:username').get(trimRequest.all, protect, getUser);
 

@@ -10,6 +10,7 @@ const {
   postRetweet,
   getSinglePostAndReplies,
   updatePost,
+  searchPosts,
 } = require('../controllers/post');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
@@ -28,6 +29,8 @@ router.param('id', (req, res, next, val) => {
   }
   next();
 });
+
+router.route('/posts/search').get(trimRequest.all, protect, searchPosts);
 
 router
   .route('/posts/:id')

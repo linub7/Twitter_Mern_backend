@@ -260,6 +260,23 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
   });
 });
 
+exports.searchPosts = asyncHandler(async (req, res, next) => {
+  const {
+    query: { content },
+  } = req;
+
+  if (!content.trim()) return next(new AppError('Invalid Request', 400));
+
+  const result = await Post.find({
+    content: { $regex: `.*${content}.*`, $options: 'i' },
+  }).populate('retweetData');
+
+  return res.status(200).json({
+    status: 'success',
+    data: { data: result },
+  });
+});
+
 const getPostsFn = async (filter) => {
   try {
     const results = await Post.find(filter)

@@ -109,3 +109,26 @@ exports.getUserFollowers = asyncHandler(async (req, res, next) => {
     data: { data: existedUser },
   });
 });
+
+exports.searchUsers = asyncHandler(async (req, res, next) => {
+  const {
+    query: { name },
+    user,
+  } = req;
+
+  if (!name.trim()) return next(new AppError('Invalid Request', 400));
+
+  const result = await User.find({
+    _id: { $ne: user.id },
+    $or: [
+      { firstName: { $regex: `.*${name}.*`, $options: 'i' } },
+      { lastName: { $regex: `.*${name}.*`, $options: 'i' } },
+      { username: { $regex: `.*${name}.*`, $options: 'i' } },
+    ],
+  }).select('firstName lastName username profilePic');
+
+  return res.status(200).json({
+    status: 'success',
+    data: { data: result },
+  });
+});
