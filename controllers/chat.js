@@ -40,3 +40,22 @@ exports.createChat = asyncHandler(async (req, res, next) => {
     data: { data: createdChat },
   });
 });
+
+exports.getChats = asyncHandler(async (req, res, next) => {
+  const { user } = req;
+  const existedChats = await Chat.find({
+    users: {
+      $elemMatch: {
+        $eq: user?._id,
+      },
+    },
+  })
+    .populate('users', 'firstName lastName username profilePic')
+    .populate('latestMessage', 'sender content')
+    .sort('-createdAt');
+
+  return res.json({
+    status: 'success',
+    data: { data: existedChats },
+  });
+});
