@@ -2,7 +2,12 @@ const express = require('express');
 const { isValidObjectId } = require('mongoose');
 const trimRequest = require('trim-request');
 
-const { createChat, getChats } = require('../controllers/chat');
+const {
+  createChat,
+  getChats,
+  getChat,
+  getChatByUserId,
+} = require('../controllers/chat');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
 
@@ -19,5 +24,9 @@ router
   .route('/chats')
   .post(trimRequest.all, protect, createChat)
   .get(trimRequest.all, protect, getChats);
+
+router.route('/chats/users/:id').get(trimRequest.all, protect, getChatByUserId);
+
+router.route('/chats/:id').get(trimRequest.all, protect, getChat);
 
 module.exports = router;
