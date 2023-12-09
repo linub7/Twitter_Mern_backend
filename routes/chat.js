@@ -7,6 +7,7 @@ const {
   getChats,
   getChat,
   getChatByUserId,
+  updateChat,
 } = require('../controllers/chat');
 const { protect } = require('../middleware/auth');
 const AppError = require('../utils/AppError');
@@ -27,6 +28,9 @@ router
 
 router.route('/chats/users/:id').get(trimRequest.all, protect, getChatByUserId);
 
-router.route('/chats/:id').get(trimRequest.all, protect, getChat);
+router
+  .route('/chats/:id')
+  .get(trimRequest.all, protect, getChat)
+  .put(trimRequest.all, protect, updateChat);
 
 module.exports = router;

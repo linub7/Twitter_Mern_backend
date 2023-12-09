@@ -139,3 +139,34 @@ exports.getChatByUserId = asyncHandler(async (req, res, next) => {
     data: { data: existedChat },
   });
 });
+
+exports.updateChat = asyncHandler(async (req, res, next) => {
+  const {
+    user,
+    body: { chatName },
+    params: { id },
+  } = req;
+
+  if (!chatName || chatName?.trim() === '' || chatName?.length < 2)
+    return next(new AppError('Please enter chat name', 400));
+
+  const updatedChat = await Chat.findOneAndUpdate(
+    {
+      _id: id,
+      users: { $elemMatch: { $eq: user?._id } },
+    },
+    {
+      chatName,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).populate('users');
+  if (!updatedChat) return next(new AppError('Chat not found', 404));
+
+  return res.json({
+    status: 'success',
+    data: { data: updatedChat },
+  });
+});
