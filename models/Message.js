@@ -13,4 +13,30 @@ const MessageSchema = new Schema(
   }
 );
 
+MessageSchema.pre('save', function (next) {
+  this.populate({
+    path: 'sender',
+    select: 'firstName lastName username profilePic',
+  });
+
+  this.populate({
+    path: 'chat',
+  });
+
+  next();
+});
+
+MessageSchema.pre(/^find/, function (next) {
+  this.populate({
+    path: 'sender',
+    select: 'firstName lastName username profilePic',
+  });
+  this.populate({
+    path: 'chat',
+    select: 'isGroupChat',
+  });
+
+  next();
+});
+
 module.exports = mongoose.model('Message', MessageSchema);
