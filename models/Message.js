@@ -8,35 +8,7 @@ const MessageSchema = new Schema(
     chat: { type: Schema.Types.ObjectId, ref: 'Chat' },
     readBy: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
-
-MessageSchema.pre('save', function (next) {
-  this.populate({
-    path: 'sender',
-    select: 'firstName lastName username profilePic',
-  });
-
-  this.populate({
-    path: 'chat',
-  });
-
-  next();
-});
-
-MessageSchema.pre(/^find/, function (next) {
-  this.populate({
-    path: 'sender',
-    select: 'firstName lastName username profilePic',
-  });
-  this.populate({
-    path: 'chat',
-    select: 'isGroupChat',
-  });
-
-  next();
-});
 
 module.exports = mongoose.model('Message', MessageSchema);

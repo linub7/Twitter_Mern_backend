@@ -51,7 +51,14 @@ exports.getChats = asyncHandler(async (req, res, next) => {
     },
   })
     .populate('users', 'firstName lastName username profilePic')
-    .populate('latestMessage', 'sender content')
+    .populate({
+      path: 'latestMessage',
+      select: 'sender content',
+      populate: {
+        path: 'sender',
+        select: 'firstName lastName username profilePic',
+      },
+    })
     .sort('-updatedAt');
 
   return res.json({

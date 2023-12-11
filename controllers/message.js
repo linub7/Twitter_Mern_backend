@@ -27,13 +27,23 @@ exports.sendMessage = asyncHandler(async (req, res, next) => {
     chat: isChatExisted?._id,
   });
 
+  const populatedNewMessage = await Message.findById(newMessage?._id)
+    .populate('sender', 'firstName lastName username profilePic')
+    .populate({
+      path: 'chat',
+      populate: {
+        path: 'users',
+      },
+    })
+    .exec();
+
   isChatExisted.latestMessage = newMessage?._id;
 
   await isChatExisted.save({ validateBeforeSave: false });
 
   return res.json({
     status: 'success',
-    data: { data: newMessage },
+    data: { data: populatedNewMessage },
   });
 });
 
@@ -55,7 +65,15 @@ exports.getMessages = asyncHandler(async (req, res, next) => {
 
   const conversationMessages = await Message.find({
     chat: chatId,
-  });
+  })
+    .populate('sender', 'firstName lastName username profilePic')
+    .populate({
+      path: 'chat',
+      populate: {
+        path: 'users',
+      },
+    })
+    .exec();
 
   return res.json({
     status: 'success',

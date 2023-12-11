@@ -91,7 +91,6 @@ const UserSchema = new Schema(
     passwordResetToken: String,
     passwordResetExpires: Date,
   },
-
   { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }
 );
 
