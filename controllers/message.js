@@ -3,6 +3,7 @@ const { isValidObjectId } = require('mongoose');
 const User = require('../models/User');
 const Chat = require('../models/Chat');
 const Message = require('../models/Message');
+const Notification = require('../models/Notification');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middleware/async');
 
@@ -40,6 +41,16 @@ exports.sendMessage = asyncHandler(async (req, res, next) => {
   isChatExisted.latestMessage = newMessage?._id;
 
   await isChatExisted.save({ validateBeforeSave: false });
+
+  isChatExisted?.users?.forEach((el) => {
+    if (el?.toString() === populatedNewMessage?.sender?._id?.toString()) return;
+    Notification.insertNotification(
+      el,
+      populatedNewMessage?.sender?._id,
+      'newMessage',
+      populatedNewMessage?.chat?._id
+    );
+  });
 
   return res.json({
     status: 'success',

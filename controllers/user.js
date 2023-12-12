@@ -1,6 +1,7 @@
 const asyncHandler = require('../middleware/async');
 const User = require('../models/User');
 const Post = require('../models/Post');
+const Notification = require('../models/Notification');
 const AppError = require('../utils/AppError');
 
 exports.getUser = asyncHandler(async (req, res, next) => {
@@ -72,6 +73,15 @@ exports.toggleUserFollow = asyncHandler(async (req, res, next) => {
     },
     { new: true }
   );
+
+  if (!isFollowing) {
+    await Notification.insertNotification(
+      existedUser?._id,
+      updatedMe?._id,
+      'follow',
+      updatedMe?._id
+    );
+  }
 
   return res.json({
     status: 'success',

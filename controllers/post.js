@@ -2,6 +2,7 @@ const { isValidObjectId } = require('mongoose');
 
 const Post = require('../models/Post');
 const User = require('../models/User');
+const Notification = require('../models/Notification');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../middleware/async');
 
@@ -35,6 +36,15 @@ exports.createPost = asyncHandler(async (req, res, next) => {
     });
   }
 
+  if (newPost.replyTo !== undefined) {
+    await Notification.insertNotification(
+      populatedPost?.replyTo?.postedBy,
+      user?._id,
+      'reply',
+      newPost?._id
+    );
+  }
+
   return res.json({
     status: 'success',
     data: { data: replyTo ? populatedPost : newPost },
@@ -52,7 +62,9 @@ exports.getPosts = asyncHandler(async (req, res, next) => {
 
   return res.json({
     status: 'success',
-    data: { data: posts },
+    data: {
+      data: posts,
+    },
   });
 });
 
@@ -122,6 +134,15 @@ exports.togglePostLike = asyncHandler(async (req, res, next) => {
     }
   );
 
+  if (!isLiked) {
+    await Notification.insertNotification(
+      existedPost?.postedBy,
+      user?._id,
+      'postLike',
+      existedPost?._id
+    );
+  }
+
   return res.json({ status: 'success', data: { data: updatedPost } });
 });
 
@@ -180,6 +201,15 @@ exports.postRetweet = asyncHandler(async (req, res, next) => {
       runValidators: true,
     }
   ).populate('retweetUsers', 'firstName lastName username');
+
+  if (!deletedPost) {
+    await Notification.insertNotification(
+      post?.postedBy,
+      user?._id,
+      'retweet',
+      post?._id
+    );
+  }
 
   return res.json({
     status: 'success',
