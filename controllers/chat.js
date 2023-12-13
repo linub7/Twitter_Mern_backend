@@ -53,7 +53,7 @@ exports.getChats = asyncHandler(async (req, res, next) => {
     .populate('users', 'firstName lastName username profilePic')
     .populate({
       path: 'latestMessage',
-      select: 'sender content',
+      select: 'sender content readBy',
       populate: {
         path: 'sender',
         select: 'firstName lastName username profilePic',
@@ -64,6 +64,30 @@ exports.getChats = asyncHandler(async (req, res, next) => {
   return res.json({
     status: 'success',
     data: { data: existedChats },
+  });
+});
+
+exports.getChatsUnreadMessages = asyncHandler(async (req, res, next) => {
+  const { user } = req;
+  const existedChats = await Chat.find({
+    users: {
+      $elemMatch: {
+        $eq: user?._id,
+      },
+    },
+  }).populate({
+    path: 'latestMessage',
+  });
+
+  const unreadMessages = existedChats.filter(
+    (chat) =>
+      !chat?.latestMessage?.readBy?.includes(user?._id?.toString()) &&
+      chat?.latestMessage?.sender?.toString() !== user?._id?.toString()
+  );
+
+  return res.json({
+    status: 'success',
+    data: { data: unreadMessages?.length },
   });
 });
 

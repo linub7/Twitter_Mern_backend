@@ -86,6 +86,14 @@ exports.getMessages = asyncHandler(async (req, res, next) => {
     })
     .exec();
 
+  const result = await Message.updateMany(
+    { chat: chatId },
+    { readBy: user?._id },
+    { new: true, runValidators: true }
+  );
+
+  console.log(result);
+
   return res.json({
     status: 'success',
     data: { data: conversationMessages },
